@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MikyU - Meesho Style Shopping</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:system-ui}
+body{background:#f9f9f9}
+.me-header{background:#fff;padding:10px;position:sticky;top:0;z-index:99;box-shadow:0 2px 4px #0001;display:flex;align-items:center;gap:8px}
+.me-logo{color:#f43397;font-weight:900;font-size:24px}
+.me-search{flex:1;border:1px solid #ddd;border-radius:8px;padding:10px 12px}
+.me-cart{position:relative;font-size:22px}
+.me-cart span{position:absolute;top:-6px;right:-6px;background:#f43397;color:#fff;font-size:11px;padding:2px 5px;border-radius:50%}
+.chips{display:flex;gap:8px;overflow:auto;padding:10px;background:#fff;white-space:nowrap}
+.chips span{border:1px solid #ddd;padding:6px 14px;border-radius:20px;font-size:13px;cursor:pointer}
+.chips .active{background:#f43397;color:#fff;border-color:#f43397}
+.banner{background:linear-gradient(135deg,#fde6f0,#e6e6ff);margin:10px;border-radius:12px;padding:16px;display:flex;justify-content:space-between;align-items:center}
+.banner h2{color:#333;line-height:1.2}
+.banner button{background:#f43397;color:#fff;border:0;padding:10px 16px;border-radius:8px;margin-top:10px;font-weight:bold}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:10px}
+.card{background:#fff;border-radius:12px;overflow:hidden;border:1px solid #eee}
+.card img{width:100%;height:160px;object-fit:cover}
+.card-body{padding:8px}
+.card-body h4{font-size:13px;height:36px;overflow:hidden}
+.price{font-weight:bold;margin:4px 0}
+.mrp{font-size:12px;color:#777} .mrp s{margin-left:4px} .off{color:#038d63;font-weight:bold;margin-left:4px}
+.free{font-size:11px;background:#e6f5ec;color:#038d63;display:inline-block;padding:2px 6px;border-radius:10px;margin:4px 0}
+.rating{font-size:11px;background:#f9f9f9;padding:3px 6px;border-radius:12px;display:inline-flex;gap:3px}
+.btn{width:100%;background:#fff;border:1px solid #f43397;color:#f43397;padding:8px;border-radius:8px;font-weight:bold;margin-top:6px}
+.btn-fill{background:#f43397;color:#fff}
+.bottom{position:fixed;bottom:0;width:100%;background:#fff;display:flex;justify-content:space-around;padding:8px 0;border-top:1px solid #eee;z-index:99}
+.bottom div{text-align:center;font-size:11px;color:#666}
+.bottom .active{color:#f43397}
+.page{display:none;padding:10px;padding-bottom:80px} .page.active{display:block}
+.input{width:100%;padding:12px;border:1px solid #ddd;border-radius:8px;margin:6px 0}
+.seller-card{background:#fff;padding:12px;border-radius:10px;margin:10px 0;border:1px solid #eee}
+</style>
+</head>
+<body>
+
+<div class="me-header">
+<div class="me-logo">mikyU</div>
+<input id="search" class="me-search" placeholder="Try Saree, Lungi, Kurti..." oninput="filterP()">
+<div class="me-cart" onclick="openPage('cart')">🛒<span id="cartC">0</span></div>
+<div style="background:#f43397;color:#fff;padding:6px 10px;border-radius:8px;font-size:12px" onclick="openPage('admin')">Admin</div>
+</div>
+
+<div class="chips">
+<span class="active" onclick="cat('all',this)">All Products</span>
+<span onclick="cat('fashion',this)">Fashion</span>
+<span onclick="cat('electronics',this)">Electronics</span>
+<span onclick="cat('beauty',this)">Beauty</span>
+<span onclick="cat('gudiyattam',this)">Gudiyattam Special</span>
+</div>
+
+<div id="p-home" class="page active">
+<div class="banner">
+<div><h2>Lowest Prices<br>Best Quality Shopping</h2><p style="font-size:12px;margin-top:4px">Free Delivery | COD | Easy Returns</p><button onclick="document.getElementById('products').scrollIntoView({behavior:'smooth'})">Shop Now →</button></div>
+<div style="font-size:50px">🛍️</div>
+</div>
+<div id="products" class="grid"></div>
+</div>
+
+<div id="p-cart" class="page">
+<h3>Cart</h3><div id="cartBox"></div>
+<div style="background:#fff;padding:12px;border-radius:10px;margin-top:10px">
+<input id="addr" class="input" placeholder="Your Address - Gudiyattam...">
+<input id="phone" class="input" placeholder="Phone Number">
+<button class="btn btn-fill" onclick="placeOrder()">Place Order - COD Available</button>
+<button class="btn" onclick="whatsappOrder()" style="background:#25D366;color:#fff;border-color:#25D366">Order on WhatsApp</button>
+</div>
+</div>
+
+<div id="p-seller" class="page">
+<h3>Seller Zone - Meesho Type</h3>
+<div class="seller-card">
+<p style="font-size:13px;color:#666">Sell on mikyU - 0% Commission for Gudiyattam Sellers</p>
+<input id="sname" class="input" placeholder="Product Name - Ex: Cotton Saree">
+<input id="sprice" class="input" type="number" placeholder="Your Price - Ex: 599">
+<input id="simg" class="input" placeholder="Image Link (or leave empty)">
+<input id="scat" class="input" placeholder="Category - fashion / gudiyattam">
+<button class="btn btn-fill" onclick="addProductBySeller()">Add Product - Sell Now</button>
+</div>
+<div id="sellerList"></div>
+</div>
+
+<div id="p-admin" class="page">
+<h3>Admin Panel - Full Control</h3>
+<div class="seller-card"><b>Total Products:</b> <span id="pcount">0</span><br><b>Total Orders:</b> <span id="ocount">0</span><br><b>Total Sellers:</b> Gudiyattam Local</div>
+<div id="adminProducts"></div>
+</div>
+
+<div id="p-wishlist" class="page"><h3>Wishlist ❤️</h3><div id="wishBox" class="grid"></div></div>
+
+<div class="bottom">
+<div class="active" onclick="openPage('home')">🏠<br>Home</div>
+<div onclick="openPage('seller')">🏪<br>Sell</div>
+<div onclick="openPage('wishlist')">❤️<br>Wishlist</div>
+<div onclick="openPage('cart')">🛒<br>Cart</div>
+</div>
+
+<script>
+let products = JSON.parse(localStorage.getItem('mikyU_products')) || [
+{id:1,name:"Gudiyattam Silk Saree - Wedding Special",price:1299,mrp:1999,cat:"fashion",img:"https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=400",rating:"4.8",reviews:"1.2k"},
+{id:2,name:"Men Cotton Lungi - Blue Check - Gudiyattam",price:499,mrp:799,cat:"gudiyattam",img:"https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?w=400",rating:"4.5",reviews:"820"},
+{id:3,name:"Kids Floral Frock - Meesho Style",price:799,mrp:1149,cat:"fashion",img:"https://images.unsplash.com/photo-1518831959646-742c3a14ebf7?w=400",rating:"4.7",reviews:"642"},
+{id:4,name:"Smart Watch - Free Delivery",price:999,mrp:1999,cat:"electronics",img:"https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400",rating:"4.3",reviews:"2k"},
+{id:5,name:"Beauty Combo - Face Cream",price:299,mrp:599,cat:"beauty",img:"https://images.unsplash.com/photo-1556228578-0d85b1a4d571?w=400",rating:"4.4",reviews:"500"}
+];
+let cart = JSON.parse(localStorage.getItem('mikyU_cart'))||[];
+let wishlist = JSON.parse(localStorage.getItem('mikyU_wish'))||[];
+
+function save(){localStorage.setItem('mikyU_products',JSON.stringify(products));localStorage.setItem('mikyU_cart',JSON.stringify(cart));localStorage.setItem('mikyU_wish',JSON.stringify(wishlist));}
+
+function render(list=products){
+let h="";list.forEach(p=>{
+h+=`<div class="card"><img src="${p.img}"><div class="card-body"><h4>${p.name}</h4><div class="free">Free Delivery</div><div class="price">₹${p.price} <span class="mrp"><s>₹${p.mrp}</s><span class="off">${Math.round((1-p.price/p.mrp)*100)}% off</span></span></div><div class="rating">⭐ ${p.rating} (${p.reviews})</div><button class="btn" onclick="addWish(${p.id})">♡ Wishlist</button><button class="btn btn-fill" onclick="addCart(${p.id})">Add to Cart</button></div></div>`;
+});
+document.getElementById('products').innerHTML=h;
+document.getElementById('pcount').innerText=products.length;
+document.getElementById('cartC').innerText=cart.length;
+document.getElementById('adminProducts').innerHTML=h;
+}
+function addCart(id){let p=products.find(x=>x.id==id);cart.push(p);save();render();alert("Added to cart da!");openPage('cart');showCart();}
+function addWish(id){let p=products.find(x=>x.id==id);if(!wishlist.find(x=>x.id==id)){wishlist.push(p);save();alert("Added to Wishlist da!");}showWish();}
+function showCart(){if(cart.length==0){document.getElementById('cartBox').innerHTML="<p>Cart Empty da - Add pannu da!</p>";return;}let t=0,tx="";cart.forEach(p=>{t+=p.price;tx+=`<div class="seller-card">${p.name} - ₹${p.price}</div>`});tx+=`<b>Total: ₹${t} - Free Delivery</b>`;document.getElementById('cartBox').innerHTML=tx;}
+function showWish(){let h="";wishlist.forEach(p=>{h+=`<div class="card"><img src="${p.img}"><div class="card-body"><h4>${p.name}</h4><div class="price">₹${p.price}</div><button class="btn btn-fill" onclick="addCart(${p.id})">Move to Cart</button></div></div>`});document.getElementById('wishBox').innerHTML=h||"<p>No wishlist da</p>";}
+function openPage(p){document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));document.getElementById('p-'+p).classList.add('active');if(p=='cart')showCart();if(p=='wishlist')showWish();window.scrollTo(0,0);}
+function cat(c,el){document.querySelectorAll('.chips span').forEach(x=>x.classList.remove('active'));el.classList.add('active');if(c=='all')render();else render(products.filter(x=>x.cat==c));}
+function filterP(){let q=document.getElementById('search').value.toLowerCase();render(products.filter(x=>x.name.toLowerCase().includes(q)));}
+function addProductBySeller(){let n=document.getElementById('sname').value,p=document.getElementById('sprice').value,i=document.getElementById('simg').value,c=document.getElementById('scat').value;if(!n||!p)return alert("Name & Price must da!");products.unshift({id:Date.now(),name:n,price:parseInt(p),mrp:parseInt(p)+500,cat:c||'fashion',img:i||'https://via.placeholder.com/300',rating:'4.5',reviews:'New'});save();render();alert("Product Live aayiduchu da! Meesho maathiri!");openPage('home');}
+function placeOrder(){if(cart.length==0)return alert("Cart empty da!");let a=document.getElementById('addr').value,ph=document.getElementById('phone').value;if(!a||!ph)return alert("Address & Phone must da!");alert("Order Success da! COD - Gudiyattam Delivery in 2 days!");cart=[];save();render();openPage('home');}
+function whatsappOrder(){if(cart.length==0)return alert("Cart empty da!");let msg="Hi mikyU! Meesho style order:%0A";cart.forEach(p=>msg+=p.name+" - ₹"+p.price+"%0A");msg+="Address: "+document.getElementById('addr').value+"%0APhone: "+document.getElementById('phone').value;window.open("https://wa.me/919999999999?text="+msg,"_blank");}
+render();
+</script>
+</body>
+</html>
